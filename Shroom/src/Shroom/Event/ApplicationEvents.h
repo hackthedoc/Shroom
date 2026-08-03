@@ -1,31 +1,15 @@
 #pragma once
 
-#include "Shroom/Event/Event.h"
+#include "Shroom/Core/Types.h"
 
 namespace Shroom {
 
-    class ApplicationTickEvent : public Event {
-    public:
-        ApplicationTickEvent() = default;
+    struct AppTickEvent {};
+    struct AppUpdateEvent {};
+    struct AppRenderEvent {};
 
-        EVENT_CLASS_TYPE(AppTick);
-        EVENT_CLASS_CATEGORY(CategoryApplication);
-    };
-
-    class ApplicationUpdateEvent : public Event {
-    public:
-        ApplicationUpdateEvent() = default;
-
-        EVENT_CLASS_TYPE(AppUpdate);
-        EVENT_CLASS_CATEGORY(CategoryApplication);
-    };
-
-    class ApplicationRenderEvent : public Event {
-    public:
-        ApplicationRenderEvent() = default;
-
-        EVENT_CLASS_TYPE(AppRender);
-        EVENT_CLASS_CATEGORY(CategoryApplication);
-    };
+    inline String ToString(const AppTickEvent&) { return "AppTickEvent"; }
+    inline String ToString(const AppUpdateEvent&) { return "AppUpdateEvent"; }
+    inline String ToString(const AppRenderEvent&) { return "AppRenderEvent"; }
 
 } // namespace Shroom
