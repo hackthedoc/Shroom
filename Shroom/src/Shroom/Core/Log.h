@@ -6,17 +6,17 @@
 
 namespace Shroom {
 
-class Log {
-public:
-    static void Init();
+    class Log {
+    public:
+        static void Init();
 
-    static Shared<spdlog::logger>& GetCoreLogger() { return s_CoreLogger; }
-    static Shared<spdlog::logger>& GetClientLogger() { return s_ClientLogger; }
+        static Shared<spdlog::logger>& GetCoreLogger() { return s_CoreLogger; }
+        static Shared<spdlog::logger>& GetClientLogger() { return s_ClientLogger; }
 
-private:
-    inline static Shared<spdlog::logger> s_CoreLogger;
-    inline static Shared<spdlog::logger> s_ClientLogger;
-};
+    private:
+        inline static Shared<spdlog::logger> s_CoreLogger;
+        inline static Shared<spdlog::logger> s_ClientLogger;
+    };
 
 } // namespace Shroom
 

@@ -4,12 +4,12 @@
 
 namespace Shroom {
 
-class Application {
-public:
-    Application();
-    virtual ~Application();
+    class Application {
+    public:
+        Application();
+        virtual ~Application();
 
-    void Run();
-};
+        void Run();
+    };
 
 } // namespace Shroom

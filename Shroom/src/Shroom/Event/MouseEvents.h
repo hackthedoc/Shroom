@@ -2,6 +2,7 @@
 
 #include "Shroom/Event/Event.h"
 
+// TODO use Shroom::StreamString 
 #include <sstream>
 
 namespace Shroom {

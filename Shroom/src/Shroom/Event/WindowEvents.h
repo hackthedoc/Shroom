@@ -2,6 +2,9 @@
 
 #include "Shroom/Event/Event.h"
 
+// TODO use Shroom::StreamString 
+#include <sstream>
+
 namespace Shroom {
 
     class WindowCloseEvent : public Event {
@@ -20,7 +23,9 @@ namespace Shroom {
         uint32 GetHeight() const { return m_Height; }
 
         String ToString() const override {
-            return String("WindowResizeEvent: ") + std::to_string(m_Width) + ", " + std::to_string(m_Height);
+            std::stringstream ss;
+            ss << "WindowResizeEvent: " << m_Width << ", " << m_Height;
+            return ss.str();
         }
 
         EVENT_CLASS_TYPE(WindowResize);
@@ -54,7 +59,9 @@ namespace Shroom {
         uint32 GetY() const { return m_Y; }
 
         String ToString() const override {
-            return String("WindowMovedEvent: ") + std::to_string(m_X) + ", " + std::to_string(m_Y);
+            std::stringstream ss;
+            ss << "WindowMovedEvent: " << m_X << ", " << m_Y;
+            return ss.str();
         }
 
         EVENT_CLASS_TYPE(WindowMoved);
