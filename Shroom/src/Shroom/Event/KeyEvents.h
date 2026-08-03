@@ -1,67 +1,41 @@
 #pragma once
 
-#include "Shroom/Event/Event.h"
+#include "Shroom/Core/Types.h"
 
 // TODO use Shroom::StreamString 
 #include <sstream>
 
 namespace Shroom {
 
-    class KeyEvent : public Event {
-    public:
-        int32 GetKeyCode() const { return m_KeyCode; }
-
-        EVENT_CLASS_CATEGORY(CategoryKeyboard | CategoryInput);
-
-    protected:
-        explicit KeyEvent(const int32 keycode) : m_KeyCode(keycode) {}
-    
-    protected:
-        int32 m_KeyCode;
+    struct KeyPressedEvent {
+        int32 KeyCode;
+        bool Repeat = false;
     };
 
-    class KeyPressedEvent : public KeyEvent {
-    public:
-        KeyPressedEvent(const int32 keycode, const bool isRepeat = false) : KeyEvent(keycode), m_IsRepeat(isRepeat) {}
-
-        inline bool IsRepeat() const { return m_IsRepeat; }
-
-        String ToString() const override {
-            std::stringstream ss;
-            ss << "KeyPressedEvent: " << m_KeyCode << "(repeats = " << m_IsRepeat << ")";
-            return ss.str();
-        }
-
-        EVENT_CLASS_TYPE(KeyPressed)
-
-    private:
-        bool m_IsRepeat;
+    struct KeyReleasedEvent {
+        int32 KeyCode;
     };
 
-    class KeyReleasedEvent : KeyEvent {
-    public:
-        KeyReleasedEvent(const int32 keycode) : KeyEvent(keycode) {}
-
-        String ToString() const override {
-            std::stringstream ss;
-            ss << "KeyReleasedEvent: " << m_KeyCode;
-            return ss.str();
-        }
-
-        EVENT_CLASS_TYPE(KeyReleased)
+    struct KeyTypedEvent {
+        uint32 Codepoint; // decoded unicode codepoint
     };
 
-    class KeyTypedEvent : KeyEvent {
-    public:
-        KeyTypedEvent(const int32 keycode) : KeyEvent(keycode) {}
+    inline String ToString(const KeyPressedEvent& e) {
+        std::stringstream ss;
+        ss << "KeyPressedEvent: " << e.KeyCode << " (repeat = " << e.Repeat << ")";
+        return ss.str();
+    }
 
-        String ToString() const override {
-            std::stringstream ss;
-            ss << "KeyTypedEvent: " << m_KeyCode;
-            return ss.str();
-        }
+    inline String ToString(const KeyReleasedEvent& e) {
+        std::stringstream ss;
+        ss << "KeyReleasedEvent: " << e.KeyCode;
+        return ss.str();
+    }
 
-        EVENT_CLASS_TYPE(KeyTyped)
-    };
+    inline String ToString(const KeyTypedEvent& e) {
+        std::stringstream ss;
+        ss << "KeyTypedEvent: " << e.Codepoint;
+        return ss.str();
+    }
 
 } // namespace Shroom

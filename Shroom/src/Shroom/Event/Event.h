@@ -2,62 +2,78 @@
 
 #include "Shroom/Core/Types.h"
 
+#include "Shroom/Event/ApplicationEvents.h"
+#include "Shroom/Event/KeyEvents.h"
+#include "Shroom/Event/MouseEvents.h"
+#include "Shroom/Event/WindowEvents.h"
+
+#include <ostream>
+#include <variant>
+
 namespace Shroom {
+
+    enum class EventCategory : uint32 {
+        None = 0,
+        Application = 1u << 0,
+        Input = 1u << 1,
+        Keyboard = 1u << 2,
+        Mouse = 1u << 3,
+        MouseButton = 1u << 4,
+    };
+
+    constexpr EventCategory operator|(EventCategory a, EventCategory b) {
+        return static_cast<EventCategory>(static_cast<uint32>(a) | static_cast<uint32>(b));
+    }
+
+    constexpr uint32 operator&(EventCategory a, EventCategory b) {
+        return static_cast<uint32>(a) & static_cast<uint32>(b);
+    }
+
+    using EventVariant = std::variant<
+        AppTickEvent, AppUpdateEvent, AppRenderEvent,
+        WindowCloseEvent, WindowResizeEvent, WindowFocusEvent, WindowLostFocusEvent, WindowMovedEvent,
+        KeyPressedEvent, KeyReleasedEvent, KeyTypedEvent,
+        MouseMovedEvent, MouseScrolledEvent, MouseButtonPressedEvent, MouseButtonReleasedEvent
+    >;
 
     class Event {
     public:
-        enum class Type {
-            None = 0,
-            WindowClose, WindowResize, WindowFocus, WindowLostFocus, WindowMoved,
-            AppTick, AppUpdate, AppRender,
-            KeyPressed, KeyReleased, KeyTyped,
-            MouseButtonPressed, MouseButtonReleased, MouseMoved, MouseScrolled,
-        };
+        Event(EventVariant data, EventCategory categories) : m_Data(std::move(data)), m_Categories(categories) {}
+    
+        template<typename T>
+        bool Is() const { return std::holds_alternative<T>(m_Data); }
 
-        enum Category : int32 {
-            CategoryNone = 0,
-            CategoryApplication = 1 << 1,
-            CategoryInput = 1 << 2,
-            CategoryKeyboard = 1 << 3,
-            CategoryMouse = 1 << 4,
-            CategoryMouseButton = 1 << 5,
-        };
+        template<typename T>
+        T& Get() { return std::get<T>(m_Data); }
 
-        #define EVENT_CLASS_TYPE(type) static Type GetStaticType() { return Type::type; } \
-                                    virtual Type GetEventType() const override { return GetStaticType(); } \
-                                    virtual const char* GetName() const override { return #type; }
-        
-        #define EVENT_CLASS_CATEGORY(category) virtual int32 GetCategoryFlags() const override { return (category); }
+        template<typename T>
+        const T& Get() const { return std::get<T>(m_Data); }
 
-    public:
-        virtual ~Event() = default;
-
-        virtual Type GetEventType() const = 0;
-        virtual const char* GetName() const = 0;
-        virtual int32 GetCategoryFlags() const = 0;
-
-        virtual String ToString() const { return GetName(); }
-
-        bool IsInCategory(Category category) {
-            return GetCategoryFlags() & category;
+        bool IsInCategory(EventCategory category) const {
+            return (m_Categories | category) != EventCategory::None;
         }
 
-    public:
-        bool Handled = false;
-    };
+        String ToString() const {
+            return std::visit([](auto&& e) { return Shroom::ToString(e); }, m_Data);
+        }
 
-    inline std::ostream& operator<<(std::ostream& os, const Event& e) {
-        return os << e.ToString();
-    }
+        const EventVariant Data() const { return m_Data; }
+
+        bool Handled = false;
+    
+    private:
+        EventVariant m_Data;
+        EventCategory m_Categories;
+    };
 
     class EventDispatcher {
     public:
-        explicit EventDispatcher(Event& event) : m_Event(event) {}
+        explicit EventDispatcher(Event& event) : m_Event(event) {}  
 
-        template<typename EventType, typename EventFunction>
-        bool Dispatch(const EventFunction& function) {
-            if (m_Event.GetEventType() == EventType::GetStaticType()) {
-                m_Event.Handled |= function(static_cast<EventType&>(m_Event));
+        template<typename T, typename Func>
+        bool Dispatch(Func&& func) {
+            if (m_Event.Is<T>()) {
+                m_Event.Handled |= func(m_Event.Get<T>());
                 return true;
             }
             return false;
@@ -66,5 +82,9 @@ namespace Shroom {
     private:
         Event& m_Event;
     };
+
+    inline std::ostream& operator<<(std::ostream& os, const Event& e) {
+        return os << e.ToString();
+    }
 
 } // namespace Shroom
